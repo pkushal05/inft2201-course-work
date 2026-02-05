@@ -40,7 +40,8 @@ class Mail {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$subject, $body, $id]);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $updatedMail = $this->getMail($id);
+        return $updatedMail;
     }
 
     public function deleteMail($id) {
