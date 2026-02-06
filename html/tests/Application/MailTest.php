@@ -22,6 +22,7 @@ class MailTest extends TestCase {
         ");
     }
 
+    // Test - CreateMail
     public function testCreateMail() {
         $mail = new Mail($this->pdo);
         $id = $mail->createMail("Alice", "Hello world");
@@ -29,6 +30,7 @@ class MailTest extends TestCase {
         $this->assertEquals(1, $id);
     }
 
+    // Test - GetAllMails
     public function testGetAllMails() {
         $mail = new Mail($this->pdo);
         $mail->createMail("Alice", "Hi there");
@@ -42,6 +44,7 @@ class MailTest extends TestCase {
         $this->assertEquals("Bye there", $mails[1]['body']);
     }
 
+    // Test - GetMail
     public function testGetMail() {
         $mail = new Mail($this->pdo);
         $id = $mail->createMail("Kushal", "Hi there");
@@ -52,6 +55,7 @@ class MailTest extends TestCase {
         $this->assertEquals("Hi there", $returnedMail[0]['body']);
     }
 
+    // Test - UpdateMail
     public function testUpdateMail() {
         $mail = new Mail($this->pdo);
         $id = $mail->createMail("Danna", "Hello World");
@@ -64,6 +68,7 @@ class MailTest extends TestCase {
         $this->assertEquals("Welcome to the World!", $returnedMail[0]['body']);
     }
 
+    // Test - DeleteMail
     public function testDeleteMail() {
         $mail = new Mail($this->pdo);
         $id = $mail->createMail("Trump", "Destroy the World");
