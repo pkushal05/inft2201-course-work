@@ -1,13 +1,16 @@
 <?php
 namespace Application;
-use Application\Mail;
-use PDO;
 
 class Page {
     public function list($items) {
         try {
-            http_response_code(200);
-            echo json_encode($items);
+            if (is_array($items) && count($items) === 0) {
+                http_response_code(200);
+                echo json_encode(["message" => "No mails yet!"]);
+                return;
+            }
+                http_response_code(200);
+                echo json_encode($items);
         } catch (\Exception $e){
             http_response_code(500);
             echo json_encode(["error" => "Failed to encode JSON"]);
