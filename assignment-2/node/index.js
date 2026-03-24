@@ -2,55 +2,99 @@ import http from "http";
 import fs from "fs";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = "SET_A_RANDOM_STRING_FOR_FULL_MARKS";
+const JWT_SECRET =
+    "ScmVkbWVhbHNpc3RlcmFjY3VyYXRlc2hpbmVzdG9wdXB3YXJkZHJpbmttYXRoZW1hdGk=";
 
-http
-  .createServer((req, res) => {
+http.createServer((req, res) => {
     if (req.method === "GET") {
-      res.writeHead(200, { "Content-Type": "text/plain" });
-      res.end("Hello Apache!\n");
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("Hello Apache!\n");
 
-      return;
+        return;
     }
 
     if (req.method === "POST") {
-      if (req.url === "/login") {
-        let body = "";
-        req.on("data", (chunk) => {
-          body += chunk;
-        });
-        req.on("end", () => {
-          try {
-            body = JSON.parse(body);
+        if (req.url === "/node/login") {
+            let body = "";
+            req.on("data", (chunk) => {
+                body += chunk;
+            });
+            req.on("end", () => {
+                try {
+                    body = JSON.parse(body);
+                    // 1. Read the users.txt file
+                    const data = fs.readFileSync("./users.txt", "utf8");
 
-            // handle a login attempt
+                    // 2. Split the file into lines and search for the user
+                    const lines = data.split("\n");
+                    let foundUser = null;
 
-            // open up our "database" (actually a flat file called ./users.txt)
-            // to see if there is a username/password combination that matches
-            // body.username and body.password
+                    for (const line of lines) {
+                        // Skip empty lines
+                        if (!line.trim()) continue;
 
-            // return a 404 error if the username isn't found
-            res.writeHead(404, { "Content-Type": "text/plain" });
-            res.end(`${body.username} not found\n`);
+                        // Format: username,password,userId,role
+                        const [userId, username, password, role] =
+                            line.split(",");
 
-            // return a 401 error if the username is found but the password doesn't match
+                        if (username === body.username) {
+                            if (password === body.password) {
+                                foundUser = {
+                                    userId: parseInt(userId),
+                                    role: role.trim(),
+                                };
+                                break;
+                            } else {
+                                // Username found, but password wrong
+                                res.writeHead(401, {
+                                    "Content-Type": "application/json",
+                                });
+                                res.end(
+                                    JSON.stringify({
+                                        error: "Invalid password",
+                                    }),
+                                );
+                                return;
+                            }
+                        }
+                    }
 
-            // on success, return an encoded userId and role using your JWT_SECRET.
-            // https://www.npmjs.com/package/jsonwebtoken
-          } catch (err) {
-            console.log(err);
-            res.writeHead(500, { "Content-Type": "text/plain" });
-            res.end("Server error\n");
-          }
-        });
-      }
+                    if (!foundUser) {
+                        res.writeHead(404, {
+                            "Content-Type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                error: `${body.username} not found`,
+                            }),
+                        );
+                    }
 
-      return;
+                    const token = jwt.sign(
+                        {
+                            userId: foundUser.userId,
+                            role: foundUser.role,
+                        },
+                        JWT_SECRET,
+                        { expiresIn: "1h" },
+                    );
+
+                    res.writeHead(200, {
+                        "Content-Type": "application/json",
+                    });
+                    res.end(JSON.stringify({ token: token }));
+                } catch (err) {
+                    console.log(err);
+                    res.writeHead(500, { "Content-Type": "text/plain" });
+                    res.end("Server error\n");
+                }
+            });
+        }
+        return;
     }
 
     res.writeHead(404, { "Content-Type": "text/plain" });
-    res.end("Not found\n");
-  })
-  .listen(8000);
+    res.end("Page not found! Try changing request method.");
+}).listen(8000);
 
 console.log("listening on port 8000");

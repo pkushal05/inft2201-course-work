@@ -8,8 +8,8 @@ class Verifier
     public $userId;
     public $role;
 
-    public function decode($jwt) 
-    {   
+    public function decode($jwt)
+    {
         if (!empty($jwt)) {
             // Trim whitespace from token string.
             $jwt = trim($jwt);
@@ -21,11 +21,11 @@ class Verifier
 
             // Attempt to decode the token:
             try {
-                $token = JWT::decode($jwt, new Key("SET_A_RANDOM_STRING_FOR_FULL_MARKS", 'HS256'));
+                $token = JWT::decode($jwt, new Key("ScmVkbWVhbHNpc3RlcmFjY3VyYXRlc2hpbmVzdG9wdXB3YXJkZHJpbmttYXRoZW1hdGk=", 'HS256'));
                 $this->userId = $token->userId;
                 $this->role = $token->role;
             } catch (\Throwable $e) {
-                // The token wasn't valid.
+                error_log("SIMULATED FAILURE: " . $e->getMessage());
             }
         }
     }

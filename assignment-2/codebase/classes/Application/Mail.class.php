@@ -12,18 +12,26 @@ class Mail
         $this->db = $db;
     }
 
-    public function createMail($name, $message)
+    public function createMail($name, $message, $id)
     {
-        $stmt = $this->db->prepare("INSERT INTO mail (name, message) VALUES (:name, :message)");
-        $stmt->execute(['name' => $name, 'message' => $message]);
+        $stmt = $this->db->prepare("INSERT INTO mail (name, message, userId) VALUES (:name, :message, :userId)");
+        $stmt->execute(['name' => $name, 'message' => $message, 'userId' => $id]);
 
         return $this->db->lastInsertId();
     }
 
-    public function listMail() 
+    public function listAllMail()
     {
-        $result = $this->db->query("SELECT id, name FROM mail ORDER BY id");
+        $result = $this->db->query("SELECT * FROM mail ORDER BY id");
 
         return $result->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function listMailById($id)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM mail WHERE userId=?");
+        $stmt->execute([$id]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
