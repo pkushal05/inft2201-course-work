@@ -89,7 +89,20 @@ http.createServer((req, res) => {
                     res.end("Server error\n");
                 }
             });
-        }
+        }//TODO - Ask the prof about this
+		if (req.url === "/node/logout") {
+			const authHeaders = req.headers["authorization"];
+			if (authHeaders && authHeaders.startsWith('Bearer ')) {
+				const token = authHeaders.split(" ")[1];
+				const decoded = jwt.verify(token, JWT_SECRET);
+				if(decoded) {
+					res.writeHead(200, {
+                        "Content-Type": "application/json",
+                    });
+                    res.end(JSON.stringify({ message: "Logout Success!" }));
+				}
+			}
+		}
         return;
     }
 
