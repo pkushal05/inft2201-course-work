@@ -25,6 +25,7 @@ class Verifier
                 $this->userId = $token->userId;
                 $this->role = $token->role;
             } catch (\Throwable $e) {
+                // Log error
                 error_log("SIMULATED FAILURE: " . $e->getMessage());
             }
         }

@@ -12,6 +12,7 @@ class Mail
         $this->db = $db;
     }
 
+    // Create mail with userid
     public function createMail($name, $message, $id)
     {
         $stmt = $this->db->prepare("INSERT INTO mail (name, message, userId) VALUES (:name, :message, :userId)");
@@ -20,6 +21,7 @@ class Mail
         return $this->db->lastInsertId();
     }
 
+    // Get all mails
     public function listAllMail()
     {
         $result = $this->db->query("SELECT * FROM mail ORDER BY id");
@@ -27,6 +29,7 @@ class Mail
         return $result->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Get mails for specific id only
     public function listMailById($id)
     {
         $stmt = $this->db->prepare("SELECT * FROM mail WHERE userId=?");

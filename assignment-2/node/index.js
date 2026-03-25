@@ -1,6 +1,7 @@
 import http from "http";
 import fs from "fs";
 import jwt from "jsonwebtoken";
+import { json } from "stream/consumers";
 
 const JWT_SECRET =
     "ScmVkbWVhbHNpc3RlcmFjY3VyYXRlc2hpbmVzdG9wdXB3YXJkZHJpbmttYXRoZW1hdGk=";
@@ -22,10 +23,10 @@ http.createServer((req, res) => {
             req.on("end", () => {
                 try {
                     body = JSON.parse(body);
-                    // 1. Read the users.txt file
+                    // Read the users.txt file
                     const data = fs.readFileSync("./users.txt", "utf8");
 
-                    // 2. Split the file into lines and search for the user
+                    // Split the file into lines and search for the user
                     const lines = data.split("\n");
                     let foundUser = null;
 
@@ -58,7 +59,7 @@ http.createServer((req, res) => {
                             }
                         }
                     }
-
+                    // If user not founs, Send error message.
                     if (!foundUser) {
                         res.writeHead(404, {
                             "Content-Type": "application/json",
@@ -70,6 +71,7 @@ http.createServer((req, res) => {
                         );
                     }
 
+                    // Built JWT token using userID and role
                     const token = jwt.sign(
                         {
                             userId: foundUser.userId,
@@ -79,6 +81,7 @@ http.createServer((req, res) => {
                         { expiresIn: "1h" },
                     );
 
+                    // Send token
                     res.writeHead(200, {
                         "Content-Type": "application/json",
                     });
@@ -89,23 +92,16 @@ http.createServer((req, res) => {
                     res.end("Server error\n");
                 }
             });
-        }//TODO - Ask the prof about this
-		if (req.url === "/node/logout") {
-			const authHeaders = req.headers["authorization"];
-			if (authHeaders && authHeaders.startsWith('Bearer ')) {
-				const token = authHeaders.split(" ")[1];
-				const decoded = jwt.verify(token, JWT_SECRET);
-				if(decoded) {
-					res.writeHead(200, {
-                        "Content-Type": "application/json",
-                    });
-                    res.end(JSON.stringify({ message: "Logout Success!" }));
-				}
-			}
-		}
+        }
+        // Logout, send empty token string
+        if (req.url === "/node/logout") {
+            res.writeHead(500, { "Content-Type": "text/plain" });
+            res.end(JSON.stringify({ token: "", message: "Logout Success" }));
+        }
         return;
     }
 
+    // Default catch
     res.writeHead(404, { "Content-Type": "text/plain" });
     res.end("Page not found! Try changing request method.");
 }).listen(8000);
