@@ -187,8 +187,6 @@ Simple health check to confirm the API is running.
             }
             ```
 
-You can also mention if you set a `Retry-After` header or include a field in the JSON.
-
 ---
 
 ## 6. Error Response Format
