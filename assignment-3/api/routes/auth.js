@@ -1,20 +1,42 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const users = require("../data/users");
+const ApiError = require("../middleware/ApiError");
 
 const router = express.Router();
 const SECRET = process.env.JWT_SECRET || "CHANGE_ME_BEFORE_SUBMISSION";
 
-// POST /login
-// Body: { username, password }
-// On success: return a JWT that includes { userId, role } as claims.
 router.post("/login", (req, res, next) => {
-  // TODO: implement:
-  // - Look up user in users.js
-  // - Check password (plain text is fine for this assignment)
-  // - If invalid, pass an appropriate auth error into next(err)
-  // - If valid, sign a JWT and return { token }
-  next(new Error("Login endpoint not implemented yet"));
+    try {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            return next(
+                new ApiError("BadRequest", "Missing Credentials", 400),
+            );
+        }
+
+        const user = users.find((u) => u.username === username);
+
+        if (!user || user.password !== password) {
+            return next(
+                new ApiError("Unauthorized", "Invalid Credentials", 401),
+            );
+        }
+
+        const token = jwt.sign(
+            {
+                userId: user.id,
+                role: user.role,
+            },
+            SECRET,
+            { expiresIn: "1h" },
+        );
+
+        res.json({ token: token });
+    } catch (err) {
+        next(err);
+    }
 });
 
 module.exports = router;

@@ -3,6 +3,8 @@ const mailData = require("../data/mail");
 const authenticateJWT = require("../middleware/authenticateJWT");
 const authorize = require("../middleware/authorize");
 const canViewMail = require("../policies/canViewMail");
+const ApiError = require("../middleware/ApiError");
+const rateLimit = require("../middleware/rateLimit");
 
 const router = express.Router();
 
@@ -10,12 +12,9 @@ const router = express.Router();
 function loadMail(req, res, next) {
   const id = parseInt(req.params.id, 10);
   const mail = mailData.find(m => m.id === id);
-
   if (!mail) {
-    // TODO: create a "not found" error object and pass to next(err)
-    return next(new Error("Mail not found (placeholder error, customize me)"));
+    return next(new ApiError("NotFound", "Mail not found", 404));
   }
-
   req.mail = mail;
   next();
 }
@@ -25,12 +24,13 @@ function loadMail(req, res, next) {
 // - Must be authenticated (JWT)
 // - Must satisfy canViewMail policy (admin OR owner)
 router.get("/:id",
+  rateLimit,
   authenticateJWT,
   loadMail,
   authorize(canViewMail),
   (req, res) => {
     // At this point, user is authenticated and authorized.
-    res.json(req.mail);
+    return res.json(req.mail);
   }
 );
 

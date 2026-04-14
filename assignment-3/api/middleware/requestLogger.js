@@ -8,6 +8,12 @@ const { v4: uuidv4 } = require("uuid");
 // - Later, your error handler should re-use the same requestId in its output.
 
 module.exports = function requestLogger(req, res, next) {
-  // TODO: implement
+
+  const requestId = uuidv4();
+
+  req.requestId = requestId;
+
+  console.log(`${req.method}, ${req.path}, Req-Id: ${req.requestId}`);
+
   next();
 };

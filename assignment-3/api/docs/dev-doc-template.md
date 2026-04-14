@@ -2,9 +2,7 @@
 
 ## 1. Overview
 
-Briefly describe what this API does and the main use case.
-
-- Example: “This API provides authenticated access to mail messages for a corporate mail system, with role-based access control, logging, rate limiting, and centralized error handling.”
+This API provides secure access to mails for a corporate system using authentication, role-based authorization, logging, rate-limitng and centralized error-handling
 
 ---
 
@@ -14,48 +12,57 @@ Briefly describe what this API does and the main use case.
 
 - Scheme: Bearer token (JWT)
 - How to obtain a token:
-  - Endpoint: `POST /auth/login`
-  - Request body format:
-    ```json
-    {
-      "username": "user1",
-      "password": "user123"
-    }
-    ```
-  - Example success response:
-    ```json
-    {
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
-    }
-    ```
+    - Endpoint: `POST /auth/login`
+
+    - Request body format:
+
+        ```json
+        {
+            "username": "YOUR_USERNAME",
+            "password": "YOUR_PASSWORD"
+        }
+        ```
+
+    - Example success response:
+
+        ```json
+        {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+        }
+        ```
 
 ### 2.2 Using the Token
 
 - Required header for authenticated requests:
-  - `Authorization: Bearer <token>`
+    - `Authorization: Bearer <token>`
 
-Mention any expiry behavior (e.g., tokens are valid for 1 hour).
+- Tokens are valid for 1 hr:
+
+```json
+{
+    "error": "Forbidden",
+    "message": "Invalid or Expired Token",
+    "statusCode": 403,
+    "requestId": "405fbd96-b...",
+    "timestamp": "2026-04-1..."
+}
+```
 
 ---
 
 ## 3. Roles & Access Rules
 
-Describe each role and what it can do.
-
-Example:
-
 - `admin`
-  - Can view any mail message.
+    - Can view any mail message.
+
 - `user`
-  - Can only view their own mail messages.
+    - Can only view their own mail messages.
 
-You can include a simple matrix:
-
-| Endpoint        | Method | admin | user |
-|----------------|--------|-------|------|
-| `/mail/:id`    | GET    | ✅ all mail | ✅ own mail only |
-| `/auth/login`  | POST   | ✅ | ✅ |
-| `/status`      | GET    | ✅ | ✅ |
+| Endpoint      | Method | admin       | user              |
+| ------------- | ------ | ----------- | ----------------- |
+| `/mail/:id`   | GET    | ✅ all mail | ✅ own mail only  |
+| `/auth/login` | POST   | ✅ any acc  | ✅ only their acc |
+| `/status`     | GET    | ✅          | ✅                |
 
 ---
 
@@ -70,21 +77,30 @@ Authenticate with username/password and receive a JWT.
 
 ```json
 {
-  "username": "user1",
-  "password": "user123"
+    "username": "YOUR_USERNAME",
+    "password": "YOUR_PASSWORD"
 }
 ```
 
-**Success Response (200):**
+**Success Response (200)**
 
 ```json
 {
-  "token": "..."
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
 }
 ```
 
-**Notes:**
-Document any common failure reasons (invalid credentials, missing fields).
+**Error Response (400): Missing Fields**
+
+```json
+{
+    "error": "BadRequest",
+    "message": "Missing Fields",
+    "statusCode": 400,
+    "requestId": "405fbd96-b...",
+    "timestamp": "2026-04-1..."
+}
+```
 
 ---
 
@@ -95,12 +111,12 @@ Retrieve a single mail message by ID.
 
 **Authentication:**
 
-* Requires `Authorization: Bearer <token>` header.
+- Requires `Authorization: Bearer <token>` header.
 
 **Access Rules:**
 
-* `admin`: may view any mail ID.
-* `user`: may view only mail where `mail.userId` matches their own `userId`.
+- `admin`: may view any mail ID.
+- `user`: may view only mail where `mail.userId` matches their own `userId`.
 
 **Example Request:**
 
@@ -113,10 +129,10 @@ curl http://localhost:3000/mail/2 \
 
 ```json
 {
-  "id": 2,
-  "userId": 2,
-  "subject": "Hello User1",
-  "body": "Your report is ready."
+    "id": 2,
+    "userId": 2,
+    "subject": "Hello User1",
+    "body": "Your report is ready."
 }
 ```
 
@@ -124,11 +140,11 @@ curl http://localhost:3000/mail/2 \
 
 ```json
 {
-  "error": "Forbidden",
-  "message": "User does not have permission to access this resource.",
-  "statusCode": 403,
-  "requestId": "req-12345",
-  "timestamp": "2025-11-30T14:22:00Z"
+    "error": "Unauthorized",
+    "message": "User does not have permission to access this resource.",
+    "statusCode": 403,
+    "requestId": "req-12345",
+    "timestamp": "2025-11-30T14:22:00Z"
 }
 ```
 
@@ -141,13 +157,13 @@ Simple health check to confirm the API is running.
 
 **Authentication:**
 
-* None required.
+- None required.
 
 **Example Response (200):**
 
 ```json
 {
-  "status": "ok"
+    "status": "ok"
 }
 ```
 
@@ -155,23 +171,21 @@ Simple health check to confirm the API is running.
 
 ## 5. Rate Limiting
 
-Describe how rate limiting works in your implementation.
+- Keyed by: IP address.
+- Limit: e.g. `RATE_LIMIT_MAX` requests per `RATE_LIMIT_WINDOW_SECONDS`.
+- What happens when the limit is exceeded:
+    - Example response:
 
-* Keyed by: (IP address) or (userId from token).
-* Limit: e.g. `RATE_LIMIT_MAX` requests per `RATE_LIMIT_WINDOW_SECONDS`.
-* What happens when the limit is exceeded:
-
-  * Example response:
-
-    ```json
-    {
-      "error": "TooManyRequests",
-      "message": "Rate limit exceeded. Please try again later.",
-      "statusCode": 429,
-      "requestId": "req-67890",
-      "timestamp": "2025-11-30T14:30:00Z"
-    }
-    ```
+            ```json
+            {
+                "error": "TooManyRequests",
+                "message": "Rate limit exceeded. Please try again later.",
+                "statusCode": 429,
+                "requestId": "req-67890",
+                "timestamp": "2025-11-30T14:30:00Z",
+                "retryAfter": 55
+            }
+            ```
 
 You can also mention if you set a `Retry-After` header or include a field in the JSON.
 
@@ -179,37 +193,121 @@ You can also mention if you set a `Retry-After` header or include a field in the
 
 ## 6. Error Response Format
 
-Briefly describe the standard error JSON returned by your centralized error handler.
-
-Example:
+**Standard Error Response Format**
 
 ```json
 {
-  "error": "Forbidden",
-  "message": "User does not have permission to access this resource.",
-  "statusCode": 403,
-  "requestId": "req-abc123",
-  "timestamp": "2025-11-30T14:35:00Z"
+    "error": "",
+    "message": "",
+    "statusCode": 200,
+    "requestId": "",
+    "timestamp": ""
 }
 ```
 
-List a few common error categories you use (`BadRequest`, `Unauthorized`, `Forbidden`, `NotFound`, `TooManyRequests`, `InternalServerError`, etc.).
+**BadRequest**
+
+```json
+{
+    "error": "BadRequest",
+    "message": "Missing Fields",
+    "statusCode": 400,
+    "requestId": "405fbd96-b...",
+    "timestamp": "2026-04-1..."
+}
+```
+
+**Unauthorized**
+
+```json
+{
+    "error": "Unauthorized",
+    "message": "User does not have permission to access this resource.",
+    "statusCode": 403,
+    "requestId": "req-12345",
+    "timestamp": "2025-11-30T14:22:00Z"
+}
+```
+
+**NotFound**
+
+```json
+{
+    "error": "NotFound",
+    "message": "Mail not found",
+    "statusCode": 404,
+    "requestId": "req-12345",
+    "timestamp": "2025-11-30T14:22:00Z"
+}
+```
 
 ---
 
 ## 7. Example Flows
 
-Provide at least one complete “happy path” and one “error path”:
-
 ### 7.1 Happy Path: Login + Access Own Mail
 
 1. `POST /auth/login` as `user1` → receive token.
+
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "username", "password": "password"}'
+```
+
+```json
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
 2. `GET /mail/2` with that token → receive mail details.
 
-Include the exact curl commands and example responses.
+```bash
+curl -X GET http://localhost:3000/mail/2 \\
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+```json
+{
+    "id": 2,
+    "userId": "user1",
+    "subject": "Hello User 1",
+    "body": "Here are you mails..."
+}
+```
 
 ### 7.2 Error Path: User Accessing Someone Else’s Mail
 
 1. Login as `user1`.
-2. `GET /mail/1` (which belongs to another user).
+
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "user1", "password": "password"}'
+```
+
+```json
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+2. `GET /mail/3` (which belongs to another user).
+
+```bash
+curl -X GET http://localhost:3000/mail/3 \\
+  -H "Authorization: Bearer <TOKEN>"
+```
+
 3. Show the `403` response.
+
+```json
+{
+    "error": "Unauthorized",
+    "message": "User does not have permission to access this resource.",
+    "statusCode": 403,
+    "requestId": "req-12345",
+    "timestamp": "2025-11-30T14:22:00Z"
+}
+```
