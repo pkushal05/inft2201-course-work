@@ -1,11 +1,8 @@
-// Composite policy:
-// A user can view mail if:
-// - they are an admin OR
-// - they own the mail resource.
-
 const isAdmin = require("./isAdmin");
 const ownsResource = require("./ownsResource");
 
+
+// True if user is admin or owns resource
 module.exports = function canViewMail(user, mail) {
   return isAdmin(user) || ownsResource(user, mail);
 };

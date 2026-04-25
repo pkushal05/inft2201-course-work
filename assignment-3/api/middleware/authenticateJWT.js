@@ -3,26 +3,23 @@ const ApiError = require("./ApiError");
 
 const SECRET = process.env.JWT_SECRET;
 
-// TODO: Implement authenticateJWT middleware for Assignment 3.
-// Requirements:
-// - Read the Authorization header: "Bearer <token>".
-// - Verify the token using jwt.verify and SECRET.
-// - If valid, attach the decoded payload to req.user.
-// - If missing/invalid/expired, pass an appropriate error into next(err)
-//   (do NOT send the response directly here — let errorHandler.js do that).
-
 module.exports = function authenticateJWT(req, res, next) {
 
+  // Get the header
   const header = req.headers.authorization;
 
+  // If there's not header, throw Error
   if(!header) {
     return next(new ApiError("Forbidden", "Missing authorization headers", 403));
   }
 
+  // Split the token
   const token = header.split(" ")[1];
 
   try {
+    // Decode the jwt
     const decoded = jwt.verify(token, SECRET);
+    // Attach it to the request
     req.user = decoded;
     next();
   } catch (err) {

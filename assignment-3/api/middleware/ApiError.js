@@ -1,3 +1,5 @@
+// An Error class to store the structured error message everytime.
+
 class ApiError extends Error {
     constructor(error, message, statusCode) {
         super(message);

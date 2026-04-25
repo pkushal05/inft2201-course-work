@@ -1,10 +1,11 @@
+// Structured Error handler
 
 module.exports = function errorHandler(err, req, res, next) {
 
   const statusCode = err.statusCode || 500;
 
   let response = {
-    error: err.error || "KUSHAL",
+    error: err.error || "Unexpected Error Occured",
     message: err.message,
     statusCode: statusCode,
     requestId: req.requestId || null,
