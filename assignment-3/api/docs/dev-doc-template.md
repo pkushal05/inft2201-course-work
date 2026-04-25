@@ -309,3 +309,7 @@ curl -X GET http://localhost:3000/mail/3 \\
     "timestamp": "2025-11-30T14:22:00Z"
 }
 ```
+
+### 7.3 Edge Cases
+
+** There are no edge cases, every error's being handled**
