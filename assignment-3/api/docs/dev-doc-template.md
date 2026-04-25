@@ -61,7 +61,7 @@ This API provides secure access to mails for a corporate system using authentica
 | Endpoint      | Method | admin       | user              |
 | ------------- | ------ | ----------- | ----------------- |
 | `/mail/:id`   | GET    | ✅ all mail | ✅ own mail only  |
-| `/auth/login` | POST   | ✅ any acc  | ✅ only their acc |
+| `/auth/login` | POST   | ✅          | ✅                |
 | `/status`     | GET    | ✅          | ✅                |
 
 ---
